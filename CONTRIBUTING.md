@@ -6,7 +6,7 @@ This project is a hardware-specific fork of [Bruce](https://github.com/pr3y/Bruc
 
 ## Ways to contribute
 
-- **Report a bug** — [open an issue](https://github.com/modabucksmain-pixel/BruceButBetter/issues/new/choose) with steps to reproduce, board, and what you expected.
+- **Report a bug** — [open an issue](https://github.com/Yoursel71/BruceButBetter/issues/new/choose) with steps to reproduce, board, and what you expected.
 - **Suggest a feature** — open an issue describing the use case.
 - **Send a fix or feature** — open a Pull Request (see below).
 - **Improve docs** — README, pinout, this guide.
@@ -16,7 +16,7 @@ This project is a hardware-specific fork of [Bruce](https://github.com/pr3y/Bruc
 You need [PlatformIO](https://platformio.org/) (CLI or the VS Code extension).
 
 ```sh
-git clone https://github.com/modabucksmain-pixel/BruceButBetter.git
+git clone https://github.com/Yoursel71/BruceButBetter.git
 cd BruceButBetter
 
 # Build
