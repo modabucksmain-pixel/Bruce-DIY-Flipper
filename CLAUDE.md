@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working Agreement
+
+Commit and push every code change automatically (no need to ask). After any edit, `git add` the touched files, write a Conventional Commits message, and `git push` to `master`. Batch one logical task into one commit. Surface push/hook failures instead of hiding them.
+
 ## What This Is
 
 Bruce is an ESP32 firmware for offensive security / red team operations. It targets M5Stack, Lilygo, and custom hardware and is built with PlatformIO + Arduino framework.
