@@ -154,6 +154,8 @@ The active board is set by `default_envs` in `platformio.ini` (`esp32-s3-devkitc
 
 ## ✨ Features
 
+Nine attack/utility modules. Probed at runtime — flash one binary, use whatever hardware you populated. Quick map:
+
 | Category | Contents |
 |---|---|
 | **WiFi** | AP/scan, Beacon spam, Deauth, Evil Portal, Wardriving, Sniffer, ARP spoof/poison, Responder |
@@ -165,6 +167,55 @@ The active board is set by `default_envs` in `platformio.ini` (`esp32-s3-devkitc
 | **Si5351** | Frequency generation 8 kHz–160 MHz (CLK0/1/2), sweep, AM band |
 | **Bad USB** | Ducky scripts (right USB-C / Native USB) |
 | **Other** | JS interpreter, WebUI, SD/LittleFS manager, QR, iButton |
+
+### 📡 WiFi attacks
+- **Deauth** — disconnect clients from a target AP (802.11 deauth frames).
+- **Beacon spam** — flood the air with fake SSIDs.
+- **Evil Portal** — captive-portal phishing page to harvest credentials.
+- **Sniffer** — capture raw 802.11 / probe-request traffic.
+- **Wardriving** — log nearby APs with GPS (if attached).
+- **ARP spoof / poison** + **Responder** — LAN man-in-the-middle, DHCP starvation.
+- **AP / scan** — host an access point or enumerate networks.
+
+### 🦷 BLE
+- **Spam** — flood iOS, Windows, Samsung and Android with pairing pop-ups.
+- **Bad BLE** — wireless Ducky / HID keystroke injection over Bluetooth.
+- **Scan** — enumerate nearby BLE devices.
+
+### 📻 Sub-GHz (CC1101, 300–928 MHz)
+- **Jammer** — flood a Sub-GHz band (garage doors, remotes, 433 MHz gear).
+- **Scan / Copy** — capture a remote's signal and **Replay** it.
+- **Custom SubGhz** — transmit arbitrary frequency / modulation.
+- **Spectrum** — live Sub-GHz spectrum analyzer.
+
+### 💳 NFC / RFID (PN532, 13.56 MHz)
+- **Read / Clone / Write** — dump cards and copy to blanks.
+- **NDEF** — read/write NFC data records.
+- **Chameleon** + **Amiibolink** — card emulation.
+
+### 🔦 Infrared
+- **Jammer** — flood IR receivers with noise.
+- **TV-B-Gone** — power off most TVs with one button.
+- **Receiver** — decode and save remote signals.
+- **Custom IR** — transmit NEC, SIRC, RC5/6, Samsung32 and more.
+
+### 🐭 NRF24 (2.4 GHz, ×2)
+- **Jammer** — flood the 2.4 GHz band (WiFi/BLE/drones in range).
+- **Mousejack** — inject keystrokes into vulnerable wireless mice/keyboards.
+- **2.4G Spectrum** — live 2.4 GHz analyzer.
+
+### 🎛️ Si5351 signal generator
+- **Frequency gen** — clean output 8 kHz – 160 MHz on CLK0 / CLK1 / CLK2.
+- **Sweep** — scan across a frequency range.
+- **AM band** — generate AM-radio carriers.
+
+### ⌨️ Bad USB
+- **Ducky scripts** — keystroke injection over native USB (right USB-C / HID).
+
+### 🧰 Extras
+- JavaScript interpreter, WebUI control panel, SD / LittleFS file manager, QR codes, iButton.
+
+> ⚠️ **Jammers and deauth are illegal to operate against gear you don't own** in most countries (RF interference / unauthorized access laws). Use only on your own hardware in a controlled environment, or where you have written authorization.
 
 ---
 
