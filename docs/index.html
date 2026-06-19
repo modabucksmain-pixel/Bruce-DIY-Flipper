@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bruce DIY Flipper — Web Flasher</title>
+  <meta name="description" content="ESP32-S3 N16R8 DIY Flipper Zero — Bruce firmware tarayıcı flasher" />
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root { --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --muted:#8b949e; --accent:#2ea043; --border:#30363d; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+           background:var(--bg); color:var(--fg); line-height:1.6; }
+    .wrap { max-width:760px; margin:0 auto; padding:48px 20px 80px; }
+    h1 { font-size:2rem; margin:0 0 4px; }
+    .sub { color:var(--muted); margin:0 0 32px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+            padding:28px; margin:20px 0; }
+    .flash { text-align:center; }
+    esp-web-install-button { display:inline-block; }
+    button.btn { background:var(--accent); color:#fff; border:none; border-radius:8px;
+                 padding:14px 28px; font-size:1.05rem; font-weight:600; cursor:pointer; }
+    button.btn:hover { filter:brightness(1.1); }
+    .note { color:var(--muted); font-size:.9rem; margin-top:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; font-size:.92rem; }
+    th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
+    th { color:var(--muted); font-weight:600; }
+    code { background:#1f2630; padding:2px 6px; border-radius:4px; font-size:.88em; }
+    a { color:#58a6ff; }
+    .warn { border-left:3px solid #d29922; padding-left:14px; color:#d6c089; }
+    .browser { background:#1f2630; border-radius:8px; padding:12px 16px; font-size:.9rem; color:var(--muted); }
+    ol { padding-left:20px; }
+    .unsupported { display:none; color:#f85149; font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🦈 Bruce DIY Flipper</h1>
+    <p class="sub">ESP32-S3 N16R8 — tarayıcıdan tek tıkla flash</p>
+
+    <div class="card flash">
+      <esp-web-install-button manifest="manifest.json">
+        <button class="btn" slot="activate">⚡ Cihaza Flash Et</button>
+        <span slot="unsupported" class="unsupported">
+          Tarayıcın Web Serial desteklemiyor. Chrome veya Edge kullan (masaüstü).
+        </span>
+        <span slot="not-allowed" class="unsupported">
+          Bu sayfa HTTPS üzerinden açılmalı.
+        </span>
+      </esp-web-install-button>
+      <p class="note">Cihazı <b>sol USB-C</b> (UART) ile bağla, butona bas, portu seç.</p>
+    </div>
+
+    <div class="card">
+      <h3>Nasıl?</h3>
+      <ol>
+        <li>Chrome veya Edge ile aç (masaüstü — Web Serial gerekli).</li>
+        <li>ESP32-S3'ü <b>sol USB-C</b> portundan bağla.</li>
+        <li><b>Flash Et</b> → seri portu seç → <b>Connect</b>.</li>
+        <li>"Erase device" işaretli kalsın (temiz kurulum). Install'a bas, bekle.</li>
+      </ol>
+      <p class="browser">⚠️ Flash başlamazsa: BOOT tuşuna basılı tutarak bağla, ya da
+        boot moduna almak için BOOT+RESET. Sürücü (CH34x / native USB) kurulu olmalı.</p>
+    </div>
+
+    <div class="card">
+      <h3>Manuel flash (esptool)</h3>
+      <p>Tarayıcı yöntemi olmazsa, <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/releases/tag/v1.0.0">Releases</a>'ten bin indir:</p>
+      <table>
+        <tr><th>Dosya</th><th>Offset</th></tr>
+        <tr><td><code>Bruce-esp32-s3-N16R8.bin</code> (merged)</td><td><code>0x0</code></td></tr>
+        <tr><td><code>bootloader.bin</code></td><td><code>0x0</code></td></tr>
+        <tr><td><code>partitions.bin</code></td><td><code>0x8000</code></td></tr>
+        <tr><td><code>boot_app0.bin</code></td><td><code>0xe000</code></td></tr>
+        <tr><td><code>firmware.bin</code></td><td><code>0x10000</code></td></tr>
+      </table>
+      <p style="margin-top:14px"><code>esptool.py --chip esp32s3 --port COMx write_flash 0x0 Bruce-esp32-s3-N16R8.bin</code></p>
+    </div>
+
+    <p class="warn card">Yalnızca yetkili güvenlik testleri ve eğitim için. AGPL lisansı.
+      <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper">Kaynak kod & detaylar →</a></p>
+  </div>
+</body>
+</html>
