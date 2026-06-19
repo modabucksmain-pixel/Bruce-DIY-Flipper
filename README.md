@@ -177,25 +177,32 @@ Output: `.pio/build/esp32-s3-devkitc-1-psram/firmware.bin`. Active board set by 
 
 ## SUPPORTED BOARDS
 
-The default build targets the custom **ESP-General** DIY hardware. Common upstream Bruce boards are also
-ported in — build any of them with `pio run -e <env>`:
+The default build targets the custom **ESP-General** DIY hardware. The **full upstream Bruce board
+matrix (30 boards)** is also ported in — build any with `pio run -e <env>`. Common targets:
 
 | Board | Build env (`-e`) | Notes |
 |---|---|---|
 | **DIY ESP32-S3 N16R8** | `esp32-s3-devkitc-1-psram` | **Primary** — this project's board (default) |
-| M5Stack Cardputer | `m5stack-cardputer` | Keyboard handheld |
-| M5StickC Plus2 | `m5stack-cplus2` | Compact stick |
-| M5Stack CoreS3 | `m5stack-cores3` | Touch core |
-| CYD (ESP32-2432S028) | `CYD-2432S028` | Cheap Yellow Display; more CYD variants in the `.ini` |
+| M5Stack Cardputer | `m5stack-cardputer` | Keyboard handheld (build-verified ✓) |
+| M5StickC Plus2 / Plus1.1 | `m5stack-cplus2` / `m5stack-cplus1_1` | Compact stick |
+| M5Stack CoreS3 / Core / Core2 | `m5stack-cores3` | Core family |
+| M5Stack StickS3 / DinMeter | `m5stack-sticks3` / `m5stack-dinmeter` | |
+| CYD (ESP32-2432S028) | `CYD-2432S028` | Cheap Yellow Display; many CYD variants in the `.ini` |
 | Lilygo T-Embed CC1101 | `lilygo-t-embed-cc1101` | Built-in Sub-GHz |
+| Lilygo T-Deck / T-Watch / T-Display S3 | `lilygo-t-deck` / `lilygo-t-watch-s3` / `lilygo-t-display-s3` | |
+| Lilygo T-HMI / T-LoRa-Pager | `lilygo-t-hmi` / `lilygo-t-lora-pager` | |
 | ESP32-C5 | `esp32-c5` | Dual-band RISC-V |
+| Marauder / Phantom / Reaper / xk404 | `Marauder-Mini` / `Phantom_S024R` / `reaper` / `xk404` | Custom PCBs |
+
+Full list: every dir under [`boards/`](./boards) (run `pio project config` to enumerate envs).
 
 Boards auto-register via the `extra_configs` glob in `platformio.ini` — drop a `boards/<name>/` dir in
 and it appears. Pin maps live in each `boards/<name>/pins_arduino.h`; features degrade gracefully when a
-chip is absent, so a single build runs across mixed hardware.
+chip is absent, so a single build runs across mixed hardware. Adding a board? See [`boards/README.md`](./boards/README.md).
 
-> Board configs are ported from upstream [Bruce](https://github.com/pr3y/Bruce). The DIY ESP-General
-> target is the one actively maintained here; the rest track upstream.
+> Board configs are ported from upstream [Bruce](https://github.com/pr3y/Bruce). **ESP-General is the DIY
+> target actively maintained and build-verified here** (plus Cardputer); the rest are byte-identical to
+> upstream and track it — not individually hardware-tested in this fork.
 
 ---
 
