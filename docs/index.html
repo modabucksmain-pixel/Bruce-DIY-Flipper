@@ -3,83 +3,476 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bruce DIY Flipper — Web Flasher</title>
-  <meta name="description" content="ESP32-S3 N16R8 DIY Flipper Zero — Bruce firmware browser flasher" />
+  <title>Bruce DIY Flipper — ESP32-S3 Red Team Multitool · Web Flasher</title>
+  <meta name="description" content="DIY Flipper Zero on ESP32-S3 N16R8 running Bruce firmware. Sub-GHz, NFC/RFID, IR, WiFi/BLE attacks, NRF24 and a Si5351 signal generator. Flash it from your browser in one click." />
+  <meta name="theme-color" content="#0d1117" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Bruce DIY Flipper — ESP32-S3 Red Team Multitool" />
+  <meta property="og:description" content="Sub-GHz · NFC/RFID · IR · WiFi/BLE · NRF24 · Si5351 — all in one ESP32-S3 device. One-click browser flasher." />
+  <meta property="og:image" content="banner.svg" />
+  <meta property="og:url" content="https://modabucksmain-pixel.github.io/Bruce-DIY-Flipper/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%88%3C/text%3E%3C/svg%3E" />
+
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
   <style>
-    :root { --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --muted:#8b949e; --accent:#2ea043; --border:#30363d; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-           background:var(--bg); color:var(--fg); line-height:1.6; }
-    .wrap { max-width:760px; margin:0 auto; padding:48px 20px 80px; }
-    h1 { font-size:2rem; margin:0 0 4px; }
-    .sub { color:var(--muted); margin:0 0 32px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
-            padding:28px; margin:20px 0; }
-    .flash { text-align:center; }
-    esp-web-install-button { display:inline-block; }
-    button.btn { background:var(--accent); color:#fff; border:none; border-radius:8px;
-                 padding:14px 28px; font-size:1.05rem; font-weight:600; cursor:pointer; }
-    button.btn:hover { filter:brightness(1.1); }
-    .note { color:var(--muted); font-size:.9rem; margin-top:14px; }
-    table { width:100%; border-collapse:collapse; margin-top:8px; font-size:.92rem; }
-    th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
-    th { color:var(--muted); font-weight:600; }
-    code { background:#1f2630; padding:2px 6px; border-radius:4px; font-size:.88em; }
-    a { color:#58a6ff; }
-    .warn { border-left:3px solid #d29922; padding-left:14px; color:#d6c089; }
-    .browser { background:#1f2630; border-radius:8px; padding:12px 16px; font-size:.9rem; color:var(--muted); }
-    ol { padding-left:20px; }
-    .unsupported { display:none; color:#f85149; font-weight:600; }
+    :root{
+      --bg:#0d1117; --bg2:#10161f; --card:#161b22; --card2:#1c232d;
+      --fg:#e6edf3; --muted:#8b949e; --dim:#6e7681;
+      --accent:#2ea043; --accent2:#3fb950; --blue:#1f6feb; --blue2:#58a6ff;
+      --warn:#d29922; --danger:#f85149; --border:#283039; --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth; scroll-padding-top:72px}
+    body{
+      margin:0; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.65; overflow-x:hidden;
+    }
+    a{color:var(--blue2); text-decoration:none}
+    a:hover{text-decoration:underline}
+    h1,h2,h3{line-height:1.25; margin:0}
+    code{background:#1f2630; padding:2px 7px; border-radius:5px; font-size:.86em;
+         font-family:"SF Mono",Consolas,"Roboto Mono",monospace; color:#d6deea}
+    .container{max-width:1080px; margin:0 auto; padding:0 20px}
+    section{padding:72px 0; position:relative}
+    .eyebrow{color:var(--accent2); font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+             font-size:.78rem; margin-bottom:10px}
+    .sec-title{font-size:2rem; font-weight:800; margin-bottom:10px}
+    .sec-sub{color:var(--muted); max-width:620px; margin-bottom:40px}
+
+    /* NAV */
+    nav{position:sticky; top:0; z-index:50; backdrop-filter:blur(12px);
+        background:rgba(13,17,23,.82); border-bottom:1px solid var(--border)}
+    .nav-in{display:flex; align-items:center; gap:8px; height:60px; max-width:1080px; margin:0 auto; padding:0 20px}
+    .brand{font-weight:800; font-size:1.05rem; display:flex; align-items:center; gap:8px; margin-right:auto}
+    .brand .fin{color:var(--accent2)}
+    .nav-links{display:flex; gap:4px; align-items:center}
+    .nav-links a{color:var(--muted); font-weight:600; font-size:.92rem; padding:8px 12px; border-radius:8px}
+    .nav-links a:hover{color:var(--fg); background:var(--card); text-decoration:none}
+    .nav-cta{background:var(--accent); color:#fff !important; padding:8px 16px !important}
+    .nav-cta:hover{filter:brightness(1.12)}
+    .burger{display:none; background:none; border:0; color:var(--fg); font-size:1.5rem; cursor:pointer}
+
+    /* HERO */
+    .hero{padding:88px 0 64px; text-align:center; position:relative; overflow:hidden}
+    .hero-bg{position:absolute; inset:0; z-index:0; pointer-events:none}
+    .hero-bg::before{content:""; position:absolute; top:-30%; left:50%; transform:translateX(-50%);
+      width:900px; height:600px; background:radial-gradient(ellipse at center, rgba(46,160,67,.22), transparent 60%);
+      filter:blur(20px)}
+    .grid-overlay{position:absolute; inset:0;
+      background-image:linear-gradient(rgba(40,48,57,.5) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(40,48,57,.5) 1px,transparent 1px);
+      background-size:42px 42px; mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000,transparent 75%);
+      -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 35%,#000,transparent 75%)}
+    .hero-in{position:relative; z-index:1}
+    .badge-pill{display:inline-flex; align-items:center; gap:8px; background:var(--card);
+      border:1px solid var(--border); border-radius:999px; padding:6px 16px; font-size:.84rem;
+      color:var(--muted); margin-bottom:26px}
+    .badge-pill .dot{width:8px; height:8px; border-radius:50%; background:var(--accent2);
+      box-shadow:0 0 0 0 rgba(63,185,80,.6); animation:pulse 2s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}70%{box-shadow:0 0 0 8px rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
+    .hero h1{font-size:clamp(2.4rem,6vw,4rem); font-weight:900; letter-spacing:-.02em; margin-bottom:18px}
+    .hero h1 .grad{background:linear-gradient(90deg,var(--accent2),var(--blue2));
+      -webkit-background-clip:text; background-clip:text; color:transparent}
+    .hero p.lead{font-size:1.18rem; color:var(--muted); max-width:640px; margin:0 auto 34px}
+    .cta-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:40px}
+    .btn{display:inline-flex; align-items:center; gap:9px; border:none; border-radius:10px;
+      padding:14px 26px; font-size:1.02rem; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s}
+    .btn-primary{background:linear-gradient(180deg,var(--accent2),var(--accent)); color:#fff;
+      box-shadow:0 6px 24px -8px rgba(46,160,67,.7)}
+    .btn-primary:hover{transform:translateY(-2px); text-decoration:none; box-shadow:0 10px 30px -8px rgba(46,160,67,.9)}
+    .btn-ghost{background:var(--card); color:var(--fg); border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--card2); text-decoration:none; border-color:#3d4754}
+    esp-web-install-button{display:inline-block}
+    .hero-banner{max-width:760px; width:100%; margin:8px auto 0; border-radius:var(--radius);
+      border:1px solid var(--border); box-shadow:0 24px 60px -20px rgba(0,0,0,.7); display:block}
+
+    /* STATS */
+    .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:48px}
+    .stat{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px 16px}
+    .stat .n{font-size:1.7rem; font-weight:800; color:var(--accent2)}
+    .stat .l{color:var(--muted); font-size:.88rem}
+
+    /* FLASH */
+    .flash-card{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--border);
+      border-radius:18px; padding:40px 28px; text-align:center; position:relative; overflow:hidden}
+    .flash-card::before{content:""; position:absolute; top:-50%; left:50%; transform:translateX(-50%);
+      width:500px; height:300px; background:radial-gradient(ellipse,rgba(46,160,67,.15),transparent 70%)}
+    .flash-card>*{position:relative; z-index:1}
+    .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:36px; text-align:left}
+    .step{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px}
+    .step .num{display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+      border-radius:8px; background:var(--accent); color:#fff; font-weight:800; margin-bottom:10px}
+    .step h4{margin:0 0 4px; font-size:1rem}
+    .step p{margin:0; color:var(--muted); font-size:.9rem}
+    .browser-warn{margin-top:24px; background:rgba(210,153,34,.08); border:1px solid rgba(210,153,34,.35);
+      border-radius:10px; padding:14px 18px; color:#e0c98a; font-size:.9rem; text-align:left}
+    .unsupported{display:none; color:var(--danger); font-weight:700}
+
+    /* FEATURES */
+    .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+    .feat{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px;
+      transition:.18s; position:relative; overflow:hidden}
+    .feat:hover{transform:translateY(-4px); border-color:rgba(46,160,67,.5);
+      box-shadow:0 16px 40px -20px rgba(46,160,67,.5)}
+    .feat .ico{font-size:1.8rem; margin-bottom:12px; display:block}
+    .feat h3{font-size:1.12rem; margin-bottom:8px; display:flex; align-items:center; gap:8px}
+    .feat .chip{font-size:.66rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+      background:rgba(31,111,235,.16); color:var(--blue2); padding:2px 8px; border-radius:6px}
+    .feat ul{margin:0; padding-left:18px; color:var(--muted); font-size:.9rem}
+    .feat li{margin:3px 0}
+
+    /* HARDWARE */
+    .hw-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:start}
+    .panel{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:26px}
+    table{width:100%; border-collapse:collapse; font-size:.92rem}
+    th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--border)}
+    th{color:var(--muted); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.05em}
+    tr:last-child td{border-bottom:none}
+    .pin-block{font-family:"SF Mono",Consolas,monospace; font-size:.84rem; background:#0c1118;
+      border-radius:10px; padding:16px; color:#c9d4e0; line-height:1.9; border:1px solid var(--border); overflow-x:auto}
+    .pin-block .c{color:var(--accent2)} .pin-block .b{color:var(--blue2)} .pin-block .d{color:var(--danger)}
+    .danger-box{border-left:3px solid var(--danger); background:rgba(248,81,73,.06)}
+
+    /* CODE / MANUAL */
+    .code-block{background:#0c1118; border:1px solid var(--border); border-radius:12px; padding:18px 20px;
+      font-family:"SF Mono",Consolas,monospace; font-size:.86rem; color:#c9d4e0; overflow-x:auto; position:relative}
+    .copy-btn{position:absolute; top:10px; right:10px; background:var(--card2); border:1px solid var(--border);
+      color:var(--muted); border-radius:7px; padding:5px 11px; font-size:.78rem; cursor:pointer; font-family:inherit}
+    .copy-btn:hover{color:var(--fg); border-color:#3d4754}
+
+    /* FAQ */
+    details{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:0 20px; margin-bottom:12px}
+    summary{cursor:pointer; font-weight:600; padding:16px 0; list-style:none; display:flex; justify-content:space-between; align-items:center}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"+"; color:var(--accent2); font-size:1.3rem; font-weight:700}
+    details[open] summary::after{content:"–"}
+    details p{margin:0 0 16px; color:var(--muted)}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border); padding:48px 0 40px; color:var(--muted)}
+    .foot-grid{display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap}
+    .foot-links{display:flex; gap:24px; flex-wrap:wrap}
+    .foot-links a{color:var(--muted)}
+    .foot-links a:hover{color:var(--fg)}
+    .legal{margin-top:26px; font-size:.85rem; color:var(--dim); border-top:1px solid var(--border); padding-top:22px}
+    .legal b{color:var(--warn)}
+
+    /* reveal */
+    .reveal{opacity:0; transform:translateY(22px); transition:.6s ease}
+    .reveal.in{opacity:1; transform:none}
+
+    @media(max-width:860px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .feat-grid{grid-template-columns:repeat(2,1fr)}
+      .steps{grid-template-columns:1fr}
+      .hw-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:600px){
+      .nav-links{position:fixed; inset:60px 0 auto 0; flex-direction:column; background:var(--bg2);
+        border-bottom:1px solid var(--border); padding:12px; display:none}
+      .nav-links.open{display:flex}
+      .nav-links a{padding:12px}
+      .burger{display:block}
+      .feat-grid{grid-template-columns:1fr}
+      section{padding:54px 0}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>🦈 Bruce DIY Flipper</h1>
-    <p class="sub">ESP32-S3 N16R8 — flash from your browser in one click</p>
 
-    <div class="card flash">
-      <esp-web-install-button manifest="manifest.json">
-        <button class="btn" slot="activate">⚡ Flash Device</button>
-        <span slot="unsupported" class="unsupported">
-          Your browser does not support Web Serial. Use Chrome or Edge (desktop).
-        </span>
-        <span slot="not-allowed" class="unsupported">
-          This page must be served over HTTPS.
-        </span>
-      </esp-web-install-button>
-      <p class="note">Connect the device via the <b>left USB-C</b> (UART), press the button, pick the port.</p>
+<!-- NAV -->
+<nav>
+  <div class="nav-in">
+    <div class="brand"><span class="fin">🦈</span> Bruce DIY Flipper</div>
+    <div class="nav-links" id="navLinks">
+      <a href="#flash">Flash</a>
+      <a href="#features">Features</a>
+      <a href="#hardware">Hardware</a>
+      <a href="#pinout">Pinout</a>
+      <a href="#faq">FAQ</a>
+      <a class="nav-cta" href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper">GitHub</a>
     </div>
-
-    <div class="card">
-      <h3>How to</h3>
-      <ol>
-        <li>Open in Chrome or Edge (desktop — Web Serial required).</li>
-        <li>Connect the ESP32-S3 to the <b>left USB-C</b> port.</li>
-        <li><b>Flash Device</b> → select the serial port → <b>Connect</b>.</li>
-        <li>Keep "Erase device" checked (clean install). Hit Install and wait.</li>
-      </ol>
-      <p class="browser">⚠️ If flashing won't start: hold BOOT while connecting, or BOOT+RESET to enter
-        download mode. The serial driver (CH34x / native USB) must be installed.</p>
-    </div>
-
-    <div class="card">
-      <h3>Manual flash (esptool)</h3>
-      <p>If the browser method fails, grab the bins from
-        <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/releases/tag/v1.0.0">Releases</a>:</p>
-      <table>
-        <tr><th>File</th><th>Offset</th></tr>
-        <tr><td><code>Bruce-esp32-s3-N16R8.bin</code> (merged)</td><td><code>0x0</code></td></tr>
-        <tr><td><code>bootloader.bin</code></td><td><code>0x0</code></td></tr>
-        <tr><td><code>partitions.bin</code></td><td><code>0x8000</code></td></tr>
-        <tr><td><code>boot_app0.bin</code></td><td><code>0xe000</code></td></tr>
-        <tr><td><code>firmware.bin</code></td><td><code>0x10000</code></td></tr>
-      </table>
-      <p style="margin-top:14px"><code>esptool.py --chip esp32s3 --port COMx write_flash 0x0 Bruce-esp32-s3-N16R8.bin</code></p>
-    </div>
-
-    <p class="warn card">For authorized security testing and education only. AGPL licensed.
-      <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper">Source code &amp; details →</a></p>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
   </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg"><div class="grid-overlay"></div></div>
+  <div class="container hero-in">
+    <span class="badge-pill"><span class="dot"></span> ESP32-S3 N16R8 · 16 MB Flash · 8 MB PSRAM</span>
+    <h1>The pocket <span class="grad">red-team multitool</span><br>you build yourself</h1>
+    <p class="lead">A DIY Flipper Zero running <b>Bruce</b> firmware. Sub-GHz, NFC/RFID, IR, WiFi &amp; BLE attacks,
+      NRF24 and a Si5351 signal generator — flashed straight from your browser.</p>
+    <div class="cta-row">
+      <esp-web-install-button manifest="manifest.json">
+        <button class="btn btn-primary" slot="activate">⚡ Flash from browser</button>
+        <span slot="unsupported" class="unsupported">Web Serial unsupported — use desktop Chrome/Edge.</span>
+        <span slot="not-allowed" class="unsupported">Must be served over HTTPS.</span>
+      </esp-web-install-button>
+      <a class="btn btn-ghost" href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper">★ Star on GitHub</a>
+    </div>
+    <img class="hero-banner" src="banner.svg" alt="Bruce DIY Flipper banner" />
+
+    <div class="stats">
+      <div class="stat"><div class="n">9+</div><div class="l">Attack modules</div></div>
+      <div class="stat"><div class="n">300–928</div><div class="l">MHz Sub-GHz (CC1101)</div></div>
+      <div class="stat"><div class="n">1-click</div><div class="l">Browser flashing</div></div>
+      <div class="stat"><div class="n">AGPL</div><div class="l">Open source</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- FLASH -->
+<section id="flash">
+  <div class="container reveal">
+    <div class="eyebrow">Install</div>
+    <h2 class="sec-title">Flash it in your browser</h2>
+    <p class="sec-sub">No toolchain, no esptool, no drivers fuss. Plug in, click, done — powered by esp-web-tools.</p>
+
+    <div class="flash-card">
+      <h3 style="font-size:1.4rem; margin-bottom:6px">🦈 Ready to flash</h3>
+      <p style="color:var(--muted); margin:0 0 22px">Connect via the <b>left USB-C</b> (UART) and hit the button.</p>
+      <esp-web-install-button manifest="manifest.json">
+        <button class="btn btn-primary" slot="activate">⚡ Flash Device</button>
+        <span slot="unsupported" class="unsupported">Your browser does not support Web Serial. Use Chrome or Edge (desktop).</span>
+        <span slot="not-allowed" class="unsupported">This page must be served over HTTPS.</span>
+      </esp-web-install-button>
+
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h4>Connect</h4><p>Plug the ESP32-S3 into the <b>left USB-C</b> port (UART/programming).</p></div>
+        <div class="step"><div class="num">2</div><h4>Select port</h4><p>Click Flash, pick the serial port, hit Connect.</p></div>
+        <div class="step"><div class="num">3</div><h4>Install</h4><p>Keep “Erase device” checked for a clean install, then wait.</p></div>
+      </div>
+
+      <div class="browser-warn">⚠️ Won't start? Hold <b>BOOT</b> while connecting (or <b>BOOT+RESET</b>) to force download mode.
+        Install the CH34x / native-USB serial driver first. Chrome or Edge on desktop required.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="background:var(--bg2)">
+  <div class="container reveal">
+    <div class="eyebrow">Arsenal</div>
+    <h2 class="sec-title">Everything in one device</h2>
+    <p class="sec-sub">Modules are probed at runtime — flash one binary, populate whatever hardware you have.</p>
+
+    <div class="feat-grid">
+      <div class="feat"><span class="ico">📡</span><h3>WiFi <span class="chip">2.4G</span></h3>
+        <ul><li>AP / scan</li><li>Beacon spam</li><li>Deauth</li><li>Evil Portal</li><li>Wardriving</li><li>Sniffer · ARP spoof/poison</li></ul></div>
+      <div class="feat"><span class="ico">🦷</span><h3>BLE <span class="chip">Bluetooth</span></h3>
+        <ul><li>Scan</li><li>Bad BLE (Ducky)</li><li>iOS / Windows spam</li><li>Samsung / Android spam</li></ul></div>
+      <div class="feat"><span class="ico">📻</span><h3>Sub-GHz <span class="chip">CC1101</span></h3>
+        <ul><li>Scan / Copy</li><li>Custom SubGhz</li><li>Spectrum analyzer</li><li>Replay</li><li>Jammer</li></ul></div>
+      <div class="feat"><span class="ico">💳</span><h3>NFC / RFID <span class="chip">PN532</span></h3>
+        <ul><li>Read / Clone / Write</li><li>NDEF records</li><li>Chameleon</li><li>Amiibolink</li></ul></div>
+      <div class="feat"><span class="ico">🔦</span><h3>Infrared <span class="chip">IR</span></h3>
+        <ul><li>TV-B-Gone</li><li>Receiver / decode</li><li>Custom IR</li><li>NEC · SIRC · RC5/6 · Samsung32</li></ul></div>
+      <div class="feat"><span class="ico">🐭</span><h3>NRF24 <span class="chip">2.4G ×2</span></h3>
+        <ul><li>Jammer</li><li>2.4G Spectrum</li><li>Mousejack</li></ul></div>
+      <div class="feat"><span class="ico">🎛️</span><h3>Si5351 <span class="chip">Clock Gen</span></h3>
+        <ul><li>8 kHz – 160 MHz</li><li>CLK0 / CLK1 / CLK2</li><li>Frequency sweep</li><li>AM band</li></ul></div>
+      <div class="feat"><span class="ico">⌨️</span><h3>Bad USB <span class="chip">HID</span></h3>
+        <ul><li>Ducky scripts</li><li>Native USB (right USB-C)</li><li>Keystroke injection</li></ul></div>
+      <div class="feat"><span class="ico">🧰</span><h3>Extras <span class="chip">Tools</span></h3>
+        <ul><li>JavaScript interpreter</li><li>WebUI</li><li>SD / LittleFS manager</li><li>QR · iButton</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- HARDWARE -->
+<section id="hardware">
+  <div class="container reveal">
+    <div class="eyebrow">Build</div>
+    <h2 class="sec-title">Hardware</h2>
+    <p class="sec-sub">An ESP32-S3 N16R8 brain with a shared SPI / I²C backbone and dual USB-C.</p>
+
+    <div class="hw-grid">
+      <div class="panel">
+        <h3 style="margin-bottom:14px">Modules</h3>
+        <table>
+          <tr><th>Module</th><th>Function</th></tr>
+          <tr><td><b>CC1101</b></td><td>Sub-GHz 300–928 MHz</td></tr>
+          <tr><td><b>PN532</b></td><td>NFC 13.56 MHz + RFID</td></tr>
+          <tr><td><b>NRF24L01 ×2</b></td><td>2.4 GHz · MouseJack · jammer</td></tr>
+          <tr><td><b>Si5351</b></td><td>Signal generator 8 kHz–160 MHz</td></tr>
+          <tr><td><b>MicroSD</b></td><td>File storage</td></tr>
+          <tr><td><b>OLED 1.3" SH1106</b></td><td>Display (SSD1106G)</td></tr>
+          <tr><td><b>VS1838B</b></td><td>IR receiver 38 kHz</td></tr>
+          <tr><td><b>IR LED + 2N2222</b></td><td>IR transmitter</td></tr>
+          <tr><td><b>Passive buzzer</b></td><td>Sound</td></tr>
+          <tr><td><b>6× buttons</b></td><td>Navigation</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <h3 style="margin-bottom:14px">Main board</h3>
+        <p style="color:var(--muted); margin-top:0">
+          <b style="color:var(--fg)">ESP32-S3 N16R8</b> — 16 MB QSPI Flash, 8 MB OPI PSRAM.</p>
+        <ul style="color:var(--muted); padding-left:18px">
+          <li><b style="color:var(--fg)">Left USB-C</b> → UART / programming &amp; browser flashing</li>
+          <li><b style="color:var(--fg)">Right USB-C</b> → Native USB (Bad USB / HID)</li>
+        </ul>
+        <p style="color:var(--muted)">Shared SPI bus (CC1101 + SD + 2× NRF24) and shared I²C
+          (OLED <code>0x3C</code>, PN532 <code>0x24</code>, Si5351 <code>0x60</code>) — unique CS / addresses, no conflicts.</p>
+        <a class="btn btn-ghost" style="margin-top:10px" href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper#-hardware">Full BOM &amp; wiring →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PINOUT -->
+<section id="pinout" style="background:var(--bg2)">
+  <div class="container reveal">
+    <div class="eyebrow">Wiring</div>
+    <h2 class="sec-title">Pinout</h2>
+    <p class="sec-sub">GPIO map for the ESP32-S3 N16R8. Mind the reserved pins — they brick the board.</p>
+
+    <div class="hw-grid">
+      <div class="panel">
+        <h3 style="margin-bottom:12px">Buses &amp; modules</h3>
+        <div class="pin-block">
+<span class="c"># I2C (shared)</span>
+IO8  = SDA     IO18 = SCL
+
+<span class="c"># SPI (shared bus)</span>
+IO11 = MOSI    IO12 = SCK    IO13 = MISO
+
+<span class="c"># CS / control (unique)</span>
+CC1101    GDO0=<span class="b">IO9</span>   CS=<span class="b">IO10</span>
+MicroSD   CS=<span class="b">IO14</span>
+NRF24 #1  CE=<span class="b">IO4</span>    CSN=<span class="b">IO5</span>
+NRF24 #2  CE=<span class="b">IO6</span>    CSN=<span class="b">IO7</span>
+IR        RX=<span class="b">IO1</span>    TX=<span class="b">IO2</span>
+Buzzer    <span class="b">IO47</span>
+
+<span class="c"># Buttons (to GND, pull-up)</span>
+UP=15 DOWN=16 LEFT=38 RIGHT=39 OK=40 BACK=41
+        </div>
+      </div>
+      <div class="panel danger-box">
+        <h3 style="margin-bottom:12px; color:var(--danger)">⛔ Do NOT use — bricks the board</h3>
+        <div class="pin-block">
+GPIO <span class="d">26-32</span>  → QSPI Flash
+GPIO <span class="d">33-37</span>  → OPI PSRAM (forbidden on N16R8)
+GPIO <span class="d">19-20</span>  → Native USB D+/D- (Bad USB)
+GPIO <span class="d">45-46</span>  → Strapping pins
+GPIO <span class="d">43-44</span>  → UART0 TX/RX (debug)
+        </div>
+        <p style="color:var(--muted); font-size:.88rem; margin-bottom:0">
+          Touching flash/PSRAM pins locks the chip. Keep these clear.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL FLASH -->
+<section id="manual">
+  <div class="container reveal">
+    <div class="eyebrow">Fallback</div>
+    <h2 class="sec-title">Manual flash (esptool)</h2>
+    <p class="sec-sub">Browser method failing? Grab the bins from
+      <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/releases">Releases</a> and flash by hand.</p>
+
+    <div class="hw-grid">
+      <div class="panel">
+        <h3 style="margin-bottom:12px">Merged (one file)</h3>
+        <div class="code-block"><button class="copy-btn" onclick="cp(this)">copy</button>esptool.py --chip esp32s3 --port COMx \
+  write_flash 0x0 Bruce-esp32-s3-N16R8.bin</div>
+        <p style="color:var(--muted); font-size:.88rem">Linux/Mac: use <code>/dev/ttyACM0</code> or <code>/dev/ttyUSB0</code> instead of <code>COMx</code>.</p>
+      </div>
+      <div class="panel">
+        <h3 style="margin-bottom:12px">Component offsets</h3>
+        <table>
+          <tr><th>File</th><th>Offset</th></tr>
+          <tr><td><code>Bruce-esp32-s3-N16R8.bin</code></td><td><code>0x0</code></td></tr>
+          <tr><td><code>bootloader.bin</code></td><td><code>0x0</code></td></tr>
+          <tr><td><code>partitions.bin</code></td><td><code>0x8000</code></td></tr>
+          <tr><td><code>boot_app0.bin</code></td><td><code>0xe000</code></td></tr>
+          <tr><td><code>firmware.bin</code></td><td><code>0x10000</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="background:var(--bg2)">
+  <div class="container reveal" style="max-width:780px">
+    <div class="eyebrow">Help</div>
+    <h2 class="sec-title">FAQ</h2>
+    <p class="sec-sub">Common questions before you flash.</p>
+
+    <details><summary>Which browser do I need?</summary>
+      <p>Desktop <b>Chrome</b> or <b>Edge</b> — they support Web Serial. Firefox and Safari don't. Mobile browsers won't work.</p></details>
+    <details><summary>Flashing won't start / no port shows up</summary>
+      <p>Hold <b>BOOT</b> while plugging in (or <b>BOOT+RESET</b>) to force download mode. Install the CH34x or native-USB serial driver, and use the <b>left USB-C</b> port.</p></details>
+    <details><summary>Do I need every module populated?</summary>
+      <p>No. Modules are probed at runtime — flash the single binary regardless of hardware. A missing chip just shows a "not found" message instead of crashing.</p></details>
+    <details><summary>Which USB-C port for what?</summary>
+      <p><b>Left</b> = UART / programming / browser flashing. <b>Right</b> = native USB for Bad USB / HID.</p></details>
+    <details><summary>Is this legal?</summary>
+      <p>The firmware is for <b>authorized</b> security testing and education only. You assume all responsibility for how you use it. AGPL licensed.</p></details>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="text-align:center">
+  <div class="container reveal">
+    <h2 class="sec-title" style="font-size:2.2rem">Build it. Flash it. Own the spectrum.</h2>
+    <p class="sec-sub" style="margin:10px auto 28px">Open source, contributor-friendly, AGPL.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#flash">⚡ Flash now</a>
+      <a class="btn btn-ghost" href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/blob/master/CONTRIBUTING.md">🤝 Contribute</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="font-size:1.1rem; margin-bottom:6px">🦈 Bruce DIY Flipper</div>
+        <p style="margin:0; max-width:340px; font-size:.9rem">DIY Flipper Zero on ESP32-S3 N16R8. Based on the
+          <a href="https://github.com/pr3y/Bruce">Bruce</a> firmware by
+          <a href="https://github.com/pr3y">@pr3y</a> &amp; <a href="https://github.com/bmorcelli">@bmorcelli</a>.</p>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper">GitHub</a>
+        <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/releases">Releases</a>
+        <a href="https://github.com/modabucksmain-pixel/Bruce-DIY-Flipper/issues/new/choose">Report bug</a>
+        <a href="https://bruce.computer">Bruce project</a>
+        <a href="https://discord.gg/WJ9XF9czVT">Discord</a>
+      </div>
+    </div>
+    <div class="legal">
+      <b>⚠️ For authorized security testing and education only.</b> Unauthorized or malicious use is prohibited —
+      you assume all responsibility. Licensed under AGPL.
+      © <span id="yr"></span> Bruce DIY Flipper contributors.
+    </div>
+  </div>
+</footer>
+
+<script>
+  // year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  // mobile menu
+  const burger=document.getElementById('burger'), nav=document.getElementById('navLinks');
+  burger.addEventListener('click',()=>nav.classList.toggle('open'));
+  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+  // copy buttons
+  function cp(btn){
+    const t=btn.parentNode.innerText.replace(/^copy\s*/,'').trim();
+    navigator.clipboard.writeText(t).then(()=>{btn.textContent='copied!';setTimeout(()=>btn.textContent='copy',1400)});
+  }
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
