@@ -12,6 +12,7 @@ void Si5351Menu::optionsMenu() {
         {"Freq Sweep",     si5351_sweep              },
         {"AM Band",        si5351_am_band            },
         {"Presets",        si5351_presets            },
+        {"Calibrate",      si5351_calibration        },
     };
     addOptionToMainMenu();
     loopOptions(options, MENU_TYPE_SUBMENU, "RF Gen");

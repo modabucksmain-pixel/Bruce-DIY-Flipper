@@ -23,6 +23,7 @@ static Si5351  si;
 static bool    si_inited     = false;
 static uint8_t si_clk_active = 0b000; // bit0=CLK0, bit1=CLK1, bit2=CLK2
 static uint64_t si_freq[3]   = {10000000ULL, 10000000ULL, 10000000ULL}; // Hz
+static int32_t  si_correction = 0; // crystal correction in ppb (session-applied)
 
 static bool si_ensure_init() {
     if (si_inited) return true;
@@ -39,6 +40,7 @@ static bool si_ensure_init() {
     si.output_enable(SI5351_CLK0, 0);
     si.output_enable(SI5351_CLK1, 0);
     si.output_enable(SI5351_CLK2, 0);
+    si.set_correction(si_correction, SI5351_PLL_INPUT_XO);
     si_inited = true;
     return true;
 }
@@ -585,6 +587,57 @@ void si5351_presets() {
     tft.setTextColor(TFT_DARKGREY, bruceConfig.bgColor);
     tft.drawCentreString("[ESC] Back", tftWidth / 2, tftHeight - 9, 1);
     while (!check(EscPress)) delay(50);
+}
+
+// ── Public feature: Crystal calibration ──────────────────────────────────────
+void si5351_calibration() {
+    if (!si_ensure_init()) return;
+
+    int32_t        corr = si_correction;
+    int32_t        step = 100;          // ppb
+    const uint64_t REF  = 10000000ULL;  // 10 MHz reference on CLK0
+
+    si.set_correction(corr, SI5351_PLL_INPUT_XO);
+    si.set_freq(REF * 100ULL, SI5351_CLK0);
+    si.output_enable(SI5351_CLK0, 1);
+
+    bool running = true, redraw = true, saved = false;
+    while (running) {
+        if (check(EscPress)) break;
+        if (check(SelPress)) { si_correction = corr; saved = true; break; }
+        if (check(NextPress)) { corr += step; si.set_correction(corr, SI5351_PLL_INPUT_XO); si.set_freq(REF * 100ULL, SI5351_CLK0); redraw = true; }
+        if (check(PrevPress)) { corr -= step; si.set_correction(corr, SI5351_PLL_INPUT_XO); si.set_freq(REF * 100ULL, SI5351_CLK0); redraw = true; }
+        if (check(UpPress))   { if (step < 100000) step *= 10; redraw = true; }
+        if (check(DownPress)) { if (step > 1) step /= 10;      redraw = true; }
+
+        if (redraw) {
+            tft.fillScreen(bruceConfig.bgColor);
+            drawMainBorderWithTitle("Si5351 Calibration");
+            int y  = BORDER_PAD_Y + FM * LH + 6;
+            int lh = max(10, tftHeight / 9);
+            tft.setTextSize(FP);
+            tft.setTextColor(TFT_YELLOW, bruceConfig.bgColor);
+            tft.drawCentreString("CLK0 = 10 MHz reference", tftWidth / 2, y, 1);
+            y += lh + 4;
+            tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
+            char b[28];
+            snprintf(b, sizeof(b), "Corr: %ld ppb", (long)corr);
+            tft.drawCentreString(b, tftWidth / 2, y, 1);
+            y += lh;
+            snprintf(b, sizeof(b), "Step: %ld ppb", (long)step);
+            tft.drawCentreString(b, tftWidth / 2, y, 1);
+            y += lh + 6;
+            tft.setTextColor(TFT_DARKGREY, bruceConfig.bgColor);
+            tft.drawCentreString("L/R trim   U/D step", tftWidth / 2, y, 1);
+            y += lh;
+            tft.drawCentreString("[OK] save   [ESC] cancel", tftWidth / 2, y, 1);
+            redraw = false;
+        }
+        delay(20);
+    }
+
+    si.output_enable(SI5351_CLK0, 0);
+    (void)saved;
 }
 
 #endif // HAS_SI5351

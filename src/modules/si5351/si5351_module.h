@@ -23,4 +23,8 @@ void si5351_am_band();
 // Quick preset picker
 void si5351_presets();
 
+// Crystal calibration: outputs a 10 MHz reference on CLK0 and lets you trim the
+// correction (ppb) live so you can zero-beat it against a known source.
+void si5351_calibration();
+
 #endif // HAS_SI5351
