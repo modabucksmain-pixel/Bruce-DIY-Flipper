@@ -1,4 +1,6 @@
 #include "rf_spectrum.h"
+#include "core/display.h"
+#include "core/sd_functions.h"
 #include "rf_utils.h"
 #include "structs.h"
 #include <RCSwitch.h>
@@ -275,6 +277,84 @@ void rf_CC1101_rssi() {
         }
     }
     deinitRfModule();
+#else
+    displayError("Not available on Launcher version");
+#endif
+}
+
+// One-shot sweep of the selected sub-GHz range, writing freq,rssi for every
+// step to a CSV on SD/LittleFS so a band profile can be analysed off-device.
+void rf_spectrum_csv() {
+#if !defined(LITE_VERSION)
+    if (bruceConfigPins.rfModule != CC1101_SPI_MODULE) {
+        displayError("only for CC1101 module", true);
+        return;
+    }
+    FS *fs = nullptr;
+    if (!getFsStorage(fs)) {
+        displayError("No SD / storage", true);
+        return;
+    }
+    createFolder(*fs, "/BruceRF");
+
+    int lo = range_limits[bruceConfigPins.rfScanRange][0];
+    int hi = range_limits[bruceConfigPins.rfScanRange][1];
+    if (!initRfModule("rx", subghz_frequency_list[lo])) {
+        displayError("CC1101 not found!", true);
+        return;
+    }
+
+    String fname = "/BruceRF/spectrum_" + String(millis()) + ".csv";
+    File f = (*fs).open(fname, FILE_WRITE);
+    if (!f) {
+        displayError("Cannot open file", true);
+        deinitRfModule();
+        return;
+    }
+    f.println("freq_mhz,rssi_dbm");
+
+    drawMainBorderWithTitle("RF Spectrum -> CSV");
+    padprintln("");
+    padprintln(String(subghz_frequency_ranges[bruceConfigPins.rfScanRange]));
+    padprintln("Capturing... [ESC] abort");
+
+    bool aborted = false;
+    int written = 0, best = -200;
+    float bestF = 0;
+    for (int i = lo; i <= hi; i++) {
+        if (check(EscPress)) {
+            aborted = true;
+            break;
+        }
+        float fr = subghz_frequency_list[i];
+        setMHZ(fr);
+        delayMicroseconds(300);
+        int rssi = ELECHOUSE_cc1101.getRssi();
+        f.printf("%.3f,%d\n", fr, rssi);
+        written++;
+        if (rssi > best) {
+            best = rssi;
+            bestF = fr;
+        }
+        if ((i - lo) % 4 == 0) {
+            tft.fillRect(10, tftHeight / 2, tftWidth - 20, 18, bruceConfig.bgColor);
+            tft.setTextColor(bruceConfig.priColor, bruceConfig.bgColor);
+            tft.drawString(String(fr, 2) + " MHz  " + String(rssi) + "dBm", 12, tftHeight / 2);
+        }
+    }
+    f.close();
+    deinitRfModule();
+
+    drawMainBorderWithTitle("RF Spectrum -> CSV");
+    padprintln("");
+    if (aborted) padprintln("Aborted (partial save).");
+    padprintln(String(written) + " points saved");
+    padprintln("Peak " + String(bestF, 3) + " MHz " + String(best) + "dBm");
+    padprintln(fname);
+    padprintln("");
+    padprintln("[OK]/[ESC] to exit");
+    while (!check(SelPress) && !check(EscPress)) delay(20);
+    returnToMenu = true;
 #else
     displayError("Not available on Launcher version");
 #endif
