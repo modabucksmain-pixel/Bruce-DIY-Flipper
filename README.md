@@ -80,11 +80,12 @@ modules wired in on top of upstream Bruce.
 | **RFID key attack** | Key-recovery attack flow on the RFID menu |
 | **Custom boot logo** | Branded splash on startup |
 
-### New firmware features (v1.1.0 — not in upstream)
+### New firmware features (not in upstream)
 | Feature | What it does |
 |---|---|
-| **Hardware Self-Test** | Top-level menu that scans the I²C bus and reports every module that answers (OLED, PN532, Si5351, RTC, sensors) with `[OK] 0xNN` — verify your wiring/soldering in seconds. |
+| **Hardware Self-Test** | Top-level menu that probes the **I²C and SPI buses** and reports every module that answers — OLED/PN532/Si5351/RTC/sensors with `[OK] 0xNN`, plus microSD and both NRF24 radios `[OK]/[--]`. Verify your wiring/soldering in seconds. |
 | **Si5351 live calibration** | Outputs a 10 MHz reference on CLK0 and lets you trim the crystal correction (ppb, variable step) live to zero-beat against a known source. |
+| **Si5351 favorites** | Save/recall your CLK0 frequencies from RF Gen → *Favorites*; persisted to `/si5351_fav.txt` on LittleFS (survives reboot). |
 | **Dual-NRF24 spectrum** | When a second NRF24 is populated, the 2.4 GHz analyzer scans odd channels on radio 2 in parallel with radio 1's even channels — ~2× faster sweep (`2x` badge). Auto-falls back to single radio. |
 
 ### Packaging

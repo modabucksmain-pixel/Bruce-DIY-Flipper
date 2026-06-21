@@ -4,6 +4,19 @@ All notable changes to BruceButBetter. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); this project is a downstream fork of
 [pr3y/Bruce](https://github.com/pr3y/Bruce).
 
+## [1.2.0] — 2026-06-21
+
+### Added
+- **Self-Test now probes the SPI bus too** — alongside the I²C scan it reports microSD and both
+  NRF24 radios (`[OK]/[--]`), probing all modules first and drawing once so a shared-SPI read can't
+  glitch the screen mid-render. CC1101 is left to the RF menu (its own probe pops a dialog). The
+  second NRF24 line is gated on `NRF24_2_CE_PIN`.
+- **Si5351 frequency favorites** — "Favorites" in RF Gen saves/recalls CLK0 frequencies, persisted
+  to `/si5351_fav.txt` on LittleFS (survives reboot; no `bruceConfig` schema change).
+- **Tag-triggered release automation** — pushing a `v*` tag now builds the whole board matrix in CI
+  and auto-attaches each merged `Bruce-<env>.bin` to the GitHub Release (`.github/workflows/release.yml`).
+  The legacy build pipeline was restricted to manual dispatch to avoid double-builds.
+
 ## [1.1.0] — 2026-06-21
 
 ### Added
