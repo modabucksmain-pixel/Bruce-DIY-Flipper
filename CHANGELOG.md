@@ -6,6 +6,11 @@ All notable changes to BruceButBetter. Format loosely follows
 
 ## [Unreleased]
 
+### Fixed
+- **Host Info port scan is now cancellable.** ESC is polled during each port's wait, not only
+  between ports, and the WiFi connect is bounded by the scan timeout, so a filtered port can no
+  longer block the loop and ESC quits the scan promptly.
+
 ### Added
 - **Capture the 2.4 GHz band to CSV.** New NRF24 menu entry *Spectrum → CSV* samples the band and
   writes `channel,freq_mhz,activity` for all 80 channels to `/BruceRF/nrf_spectrum_<ms>.csv`, reporting
